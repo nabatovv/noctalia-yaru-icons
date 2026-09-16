@@ -10,19 +10,17 @@
 # 3) Sets Yaru-noctalia as the current GNOME icon theme.
 #
 # Usage:
-#   ./make-yaru-noctalia.sh
+#   ./repaint-yaru-icons.sh
 #
 # Example:
-#   ./make-yaru-noctalia.sh
+#   ./repaint-yaru-icons.sh
 
 set -euo pipefail
 
 # Noctalia updates colors in ~/.config/gtk-4.0/noctalia.css with a delay. Let's wait.
 sleep 5
 
-# ---------------------------------------------------------------------------
 # Config
-# ---------------------------------------------------------------------------
 
 # Default accent color used by stock Yaru "places" icons (Ubuntu orange).
 OLD_COLOR="#da5b2a"
@@ -31,9 +29,7 @@ THEME_NAME="Yaru-noctalia"
 DEST_THEME_DIR="$HOME/.icons/${THEME_NAME}"
 
 
-# ---------------------------------------------------------------------------
 # Args / sanity checks
-# ---------------------------------------------------------------------------
 
 usage() {
     echo "Usage: $0 <new_color_hex>"
@@ -66,8 +62,7 @@ if [[ -z "$SRC_THEME_DIR" ]]; then
     exit 1
 fi
 
-# --- Compute HSL modulate values (lightness%, saturation%, hue%) that take
-#     OLD_COLOR to NEW_COLOR, to use with `convert -modulate` -----------
+# Compute HSL modulate values (lightness%, saturation%, hue%) that take OLD_COLOR to NEW_COLOR, to use with `convert -modulate`
 read -r LIGHT_PCT SAT_PCT HUE_PCT < <(python3 - "$OLD_COLOR" "$NEW_COLOR" <<'PYEOF'
 import sys, colorsys
 
@@ -113,8 +108,7 @@ if [[ ! -e "$DEST_THEME_DIR" ]]; then
     cp -rLp "$SRC_THEME_DIR" "$DEST_THEME_DIR"
     echo "Copy complete."
 else
-  :
-#    echo "$DEST_THEME_DIR already exists, skipping copy."
+    echo "$DEST_THEME_DIR already exists, skipping copy."
 fi
 echo
 
