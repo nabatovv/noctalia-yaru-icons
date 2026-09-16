@@ -67,7 +67,7 @@ if [[ -z "$SRC_THEME_DIR" ]]; then
 fi
 
 # --- Compute HSL modulate values (lightness%, saturation%, hue%) that take
-#     OLD_COLOR to NEW_COLOR, for use with `convert -modulate` -----------
+#     OLD_COLOR to NEW_COLOR, to use with `convert -modulate` -----------
 read -r LIGHT_PCT SAT_PCT HUE_PCT < <(python3 - "$OLD_COLOR" "$NEW_COLOR" <<'PYEOF'
 import sys, colorsys
 
@@ -97,7 +97,7 @@ PYEOF
 
 echo "Source theme:      $SRC_THEME_DIR"
 echo "Destination theme:  $DEST_THEME_DIR"
-echo "Recoloring $OLD_COLOR -> $NEW_COLOR"
+echo "Repainting $OLD_COLOR -> $NEW_COLOR"
 echo
 
 # ---------------------------------------------------------------------------
@@ -122,10 +122,10 @@ echo
 sed -i 's/^Name=Yaru.*/Name=Yaru-noctalia/g' "$HOME/.icons/Yaru-noctalia/index.theme"
 
 # ---------------------------------------------------------------------------
-# Step 2: recolor PNGs under every "places" subfolder.
+# Step 2: repaint PNGs under every "places" subfolder.
 # ---------------------------------------------------------------------------
 
-echo "Recoloring 'places' PNGs ..."
+echo "Repainting 'places' PNGs ..."
 
 while IFS= read -r -d '' placesdir; do
     rel="${placesdir#"$SRC_THEME_DIR"/}"
@@ -137,14 +137,14 @@ while IFS= read -r -d '' placesdir; do
         fname="$(basename "$png")"
         convert "$png" -strip -modulate "$LIGHT_PCT,$SAT_PCT,$HUE_PCT" \
             "$destdir/$fname" &
-#        echo "  recolored: $rel/$fname"
+#        echo "  repainted: $rel/$fname"
     done < <(find "$placesdir" \( -type f -o -type l \) -iname "*.png" -print0)
 
 done < <(find "$SRC_THEME_DIR" -type d -name "places" -print0)
 
 wait
 
-echo "Recolor complete."
+echo "Repainting complete."
 echo
 
 # ---------------------------------------------------------------------------
