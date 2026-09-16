@@ -1,6 +1,6 @@
 # Noctalia Yaru icons
 
-Script that recolors [Yaru](https://github.com/ubuntu/yaru) icons to match [Noctalia](https://github.com/noctalia-dev/noctalia) theme.
+Script that repaints [Yaru](https://github.com/ubuntu/yaru) icons to match [Noctalia](https://github.com/noctalia-dev/noctalia) theme.
 
 https://github.com/user-attachments/assets/281f731e-073c-4ae3-a4f1-644c6f0aee00
 
