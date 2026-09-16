@@ -2,6 +2,8 @@
 
 Script that recolors Yaru icons to match Noctalia's theme.
 
+https://github.com/user-attachments/assets/281f731e-073c-4ae3-a4f1-644c6f0aee00
+
 ![Noctalia Settings with the script applied](img.png)
 
 ## Prerequisites:
