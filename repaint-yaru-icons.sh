@@ -119,24 +119,63 @@ sed -i 's/^Name=Yaru.*/Name=Yaru-noctalia/g' "$HOME/.icons/Yaru-noctalia/index.t
 # Step 2: repaint PNGs under every "places" subfolder.
 # ---------------------------------------------------------------------------
 
-echo "Repainting 'places' PNGs ..."
+echo "Repainting PNGs ..."
 
-while IFS= read -r -d '' placesdir; do
-    rel="${placesdir#"$SRC_THEME_DIR"/}"
-    destdir="$DEST_THEME_DIR/$rel"
-    mkdir -p "$destdir"
+# Icon names (without .png) to process wherever they appear in the theme,
+# in addition to everything inside "places" directories.
+INCLUDE_LIST=(
+    file-manager filemanager-app nautilus org.gnome.Nautilus
+    system-file-manager emblem-readonly go-first go-last
+    mail-reply-all mail-replyall stock_mail-reply-to-all
+    applications-system livepatch org.gnome.tweaks org.gnome.Tweaks
+    preferences-desktop tweaks-app unity-tweak-tool
+    workspace-switcher-left-bottom workspace-switcher-left-top
+    workspace-switcher-right-bottom workspace-switcher-right-top
+    workspace-switcher-top-left
+    preferences-system-brightness-lock system-lock-screen
+    unity-screen-panel folder-drag-accept
+)
 
-    # Include both real files and symlinks so linked PNGs are processed too.
-    while IFS= read -r -d '' png; do
-        fname="$(basename "$png")"
+# Icon names (without .png) that are never processed, even inside "places".
+EXCLUDE_LIST=(
+    folder-recent network-server start-here user-trash
+    network-workgroup distributor-logo
+)
+
+# Lowercased lookup tables (matching is case-insensitive, like -iname was)
+declare -A INCLUDE_NAMES=() EXCLUDE_NAMES=()
+for n in "${INCLUDE_LIST[@]}"; do INCLUDE_NAMES["${n,,}"]=1; done
+for n in "${EXCLUDE_LIST[@]}"; do EXCLUDE_NAMES["${n,,}"]=1; done
+
+MAX_JOBS="$(nproc)"
+
+# Include both real files and symlinks so linked PNGs are processed too.
+while IFS= read -r -d '' png; do
+    fname="$(basename "$png")"
+    key="${fname%.*}"
+    key="${key,,}"
+
+    # Exclusions always win
+    [[ -n "${EXCLUDE_NAMES[$key]+x}" ]] && continue
+
+    rel="${png#"$SRC_THEME_DIR"/}"
+    reldir="$(dirname "$rel")"
+
+    # Process if it lives under a "places" dir, or its name is in the include list
+    if [[ "/$reldir/" == */places/* || -n "${INCLUDE_NAMES[$key]+x}" ]]; then
+        destdir="$DEST_THEME_DIR/$reldir"
+        mkdir -p "$destdir"
+
+        # Throttle parallel jobs so we don't spawn thousands of convert processes
+        while (( $(jobs -rp | wc -l) >= MAX_JOBS )); do wait -n; done
+
         convert "$png" -strip -modulate "$LIGHT_PCT,$SAT_PCT,$HUE_PCT" \
             "$destdir/$fname" &
-#        echo "  repainted: $rel/$fname"
-    done < <(find "$placesdir" \( -type f -o -type l \) -iname "*.png" -print0)
+        # echo "  repainted: $rel"
+    fi
+done < <(find "$SRC_THEME_DIR" \( -type f -o -type l \) -iname "*.png" -print0)
 
-done < <(find "$SRC_THEME_DIR" -type d -name "places" -print0)
-
-wait
+wait   # let the last background conversions finish
 
 echo "Repainting complete."
 echo
